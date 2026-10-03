@@ -1,0 +1,11 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		{C72A9B91-3311-11D3-8BF2-00105A6DC077} = s 'debugger'
+		'debugger.EXE'
+		{
+			val AppID = s {C72A9B91-3311-11D3-8BF2-00105A6DC077}
+		}
+	}
+}

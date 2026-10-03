@@ -1,0 +1,206 @@
+// ctlspysrv.idl : IDL source for ctlspysrv.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (ctlspysrv.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+/*
+[
+object,
+uuid(3DFF4950-3310-11D3-8BF2-00105A6DC077),
+
+helpstring("ISpy Interface"),
+pointer_default(unique)
+]
+interface ISpy : IUnknown
+	{
+	};
+*/
+
+struct IDENTITY_INFO
+	{
+	long dwCookie;
+	long dwFlags;
+	BSTR bstrFriendlyName;
+	};
+
+struct REFCOUNT
+	{
+	IID iid;
+	ULONG rfcount;
+	};
+
+
+typedef enum tagIDENTITY_FLAGS
+	{
+	IDENTITY_COCLASS = 1,
+	IDENTITY_WEAK = 2,
+	IDENTITY_PROXY = 4   
+	} IDENTITY_FLAGS;
+
+[
+object,
+uuid(F10764D6-342A-11D3-8BF3-00105A6DC077),
+pointer_default(unique)
+]
+	interface IDebuggerPrivate : IUnknown
+	{
+	//This interface is only used between us and the debug manager.  Whenever a remote
+	//process wants to attach to us it will ask us.  Obviously this call looks a lot
+	//like IUnknown, but we can return E_UNEXPECTED or a custom HRESULT if more than
+	//one debugger try to attach to us.
+	HRESULT QueryAttachDebugger([in]REFIID riid, [out, iid_is(riid)]IUnknown ** ppv);
+	};
+
+
+[
+object,
+uuid(F10764D5-342A-11D3-8BF3-00105A6DC077),
+pointer_default(unique)
+]
+	interface IObjectEvents : IUnknown
+	{
+	//ObjCreated tells the outside world that we added an object to this process.  We pass the cookie
+	//identifying this new object, as well as a friendly name and some flags.  The flags parameter is 
+	//a bitfield, which will hold info on what type of object it is.  
+	HRESULT ObjCreated([in] struct IDENTITY_INFO  *pif);
+
+	//This says that one of our tracked objects went away.  Note that for IDENTITY_WEAK objects this
+	//doesn't necessarily mean the object is really gone.
+	HRESULT ObjDestroyed([in]long Cookie);
+
+	//This is obviously called in response to QueryInterface.
+	HRESULT ObjQI([in]long Cookie, [in]REFIID riid, [in]ULONG newCount, [in]HRESULT hrQI);
+	
+	//We fire these events so that debuggers can dispay per-interface reference counts. Note that
+	//you can't this number too literally; if the object calls AddRef on itself, for example, then
+	//we won't detect it. The special case of AddRef in response to a successful QI _is_ handled 
+	//appropriately, however.
+	HRESULT ObjRefCountChanged([in]long Cookie, [in]REFIID riid, [in]ULONG oldCount, [in]ULONG newCount);
+
+	//This is fired every time a method executes.  The parameters are self-explanatory.
+	HRESULT ObjMethodCalled([in]long Cookie, [in]REFIID riid, [in]long vtblIndex, [in]long reserved, [in]HRESULT hr);
+	};
+
+[
+object,
+uuid(F10764D4-342A-11D3-8BF3-00105A6DC077),
+pointer_default(unique)
+]
+	interface IObjectBreakpointEvents : IUnknown
+	{
+	///All breakpoint events are fired on a parallel interface, mostly for the convenience of the clients.
+
+	//This is fired whenever the user has set a breakpoint; this allows the calling process to see what's
+	//going on before the method is called.
+	HRESULT ObjPreBreakpoint([in]long Cookie, [in]REFIID riid, [in]long vtblIndex);
+
+	//This is fired _after_ a method is invoked, and brings the HRESULT to the debugger.  The debugger
+	//can change this value.
+	HRESULT ObjPostBreakpoint([in]long Cookie, [in]REFIID riid, [in]long vtblIndex, [in,out]HRESULT * phrFromInner);
+	};
+
+[
+object,
+uuid(F10764D3-342A-11D3-8BF3-00105A6DC077),
+pointer_default(unique)
+]
+	interface IDebuggedObject : IUnknown
+	{
+	//Using the ISpyAccessor registered with the debugger mgr the outside world can
+	//access an IDebuggedObject for each wrapped identity.
+
+	[propget]HRESULT Info([out,retval]struct IDENTITY_INFO *pif);
+
+	//We allow the debugger to get a snapshot of all of the interfaces on the object and their refcounts.  The
+	//only current option is to pass 1 to mean "include interfaces with zero refcount".  This is much more
+	//expensive (can take several seconds), but can be used to find out every interface an object supports.
+
+	//One a client has obtained the interface counts it can sign up for updates via the IObjectEvents iface.
+	HRESULT GetInterfaceCounts([in]long dwOptions, [out]long *pCount, [out, size_is(,*pCount)]struct REFCOUNT ** pRC);
+	};
+
+[
+object,
+uuid(F10764D2-342A-11D3-8BF3-00105A6DC077),
+pointer_default(unique)
+]
+	interface ISpyAccessor : IUnknown
+	{
+	//this interface is used by the debugger to talk to a debugged process.  There should only be one
+	//of these per debugged process. When we start up debugging we will start the debugger manager (i.e.
+	//the thing with the taskbar icon_ and register one of these.  The debuggers can use this IP to get
+	//at the debugged objects and twiddle with them.
+	
+	//This is a quick and dirty way for the outside world to get cookies for all of the active objects.
+	HRESULT GetAllObjects([out]long * pCount, [out, size_is(,*pCount)] struct IDENTITY_INFO ** pCookies);
+
+	//Clients use this to query for an accessor for a debugged object.  Currently the only IID that
+	//makes sense is IDebuggedObject.  Notice that this does _not_ return an IP to the actual object in
+	//question.
+	HRESULT AccessObject([in]long Cookie, [in]REFIID riid, [out,iid_is(riid)]IUnknown ** ppAccessor);
+
+	//pass -1 for the cookie to register for events from _all_ objects
+	HRESULT Advise([in]long ObjCookie, [in]REFIID riid, [in, iid_is(riid)]IUnknown * pSink, [out]long * pCookie);
+	HRESULT Unadvise([in]long Cookie);
+	};
+
+/*
+
+===========THIS CODE IS OBSOLETE================
+
+[
+object,
+uuid(F10764D1-342A-11D3-8BF3-00105A6DC077),
+local,
+helpstring("ISpyHookSite Interface"),
+pointer_default(unique)
+]
+	interface ISpyHookSite : IUnknown
+	{
+	//After messing around with implementing a SPM I was demoralized by how slow and complicated
+	//it is to use.  The next idea I had was to have the custom interface hooks just implement
+	//IDispatch, and the control spy would pick up the properties as per usual there.  The only
+	//problem with that is the fact that it's hard if not impossible then to build a custom hook
+	//that actually hooks and reports on IDispatch (as in TRACEHOOK).  I can solve this right now
+	//if I add a QI style method on ISpyHook and get the interfaces that way rather than via QI.
+	//(I still would need to aggregate on the objects to keep the QI identity stuff all working).
+	
+	//So here's my solution.  I'm adding a SetExternalDispatch method to the
+	//site, and custom hooks can call it to register an implementation of IDispatch through which
+	//the control spy can get the properties.  Hooks that don't call it don't get to have properties.
+	// 
+	
+	//The IDispatch registered here will be available to the outside world, so objects need to be careful
+	//what they send in here.  Note that hooks must _not_ register their own IDispatch 
+	//this way, because the hook is aggregated into the identity as a whole.
+	HRESULT SetExternalDispatch([in] IDispatch * pDispatch);
+
+	//When interface pointers are being passed into and out of methods the custom hooks
+	//will need to wrap those pointers to monitor them as well.
+	HRESULT WrapObject([in]IUnknown * pObjRaw, [in] long Reserved, [in]BSTR bstrName, [in]REFIID riid, [out, iid_is(riid)]void ** ppObjWrapped);
+
+	//SafeRef works exactly like the SafeRef documented on MSDN.
+	HRESULT SafeRef([in]REFIID riid, [out, iid_is(riid)]void ** ppv);
+	};
+
+[
+object,
+uuid(F10764D0-342A-11D3-8BF3-00105A6DC077),
+
+helpstring("ISpyHook Interface"),
+pointer_default(unique)
+]
+	interface ISpyHook : IUnknown
+	{
+	//All spy hooks need to implement this interface.
+	//The control spy will CoCreate the hook as an aggregate. The host will call
+	//SetSite followed by SetInner to give the object the stuff it needs to 
+	//communicate.
+	HRESULT SetSite([in]IUnknown * pSite);
+	HRESULT SetInner([in]IUnknown * pInner);
+	};
+*/

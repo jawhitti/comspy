@@ -1,0 +1,71 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>COMSpy Source</title>
+</head>
+
+<body>
+
+<h1>COMSpy Open Source Project</h1>
+<p>&nbsp;</p>
+<p>Due to popular demand COMSpy is going open source soon, but for now please
+don't distribute this URL.&nbsp; </p>
+<h3>State of the code</h3>
+<p>The code is somewhat messy right now because I stopped working on it before I
+got everything done.&nbsp; Thus, some of the comments are misleading.&nbsp; This
+code is <b>not</b> exactly what was used to build the currently distributed
+version - I was too dumb to use source control and contaminated the code later
+when I started trying to make MTA spying work (it still doesn't).&nbsp; However
+it's pretty close.</p>
+<p>To build COMSpy download the code <a href="comspy_src.zip">here</a>.&nbsp;
+For minimum trouble unzip it into a folder called \projects\comspy.</p>
+<p>You will see the following folders and projects:</p>
+<table border="1" width="100%" bordercolor="#FFFFCC" bgcolor="#FFFFCC">
+  <tr>
+    <td width="20%"><b>bin</b></td>
+    <td width="80%">output of other projects goes here.&nbsp; Should be empty</td>
+  </tr>
+  <tr>
+    <td width="20%"><b>ctlspysrv</b></td>
+    <td width="80%">Way back when COMSpy was called the &quot;control
+      spy&quot;.&nbsp; This project builds ctlspysrv.dll which is the nucleus of
+      the whole thing.</td>
+  </tr>
+  <tr>
+    <td width="20%"><b>debugger</b></td>
+    <td width="80%">Creates the AGENT executable (the taskbar icon app).&nbsp;
+      ctlspysrv.dll and comspy.exe communicate via this process.</td>
+  </tr>
+  <tr>
+    <td width="20%"><b>hookcfg</b></td>
+    <td width="80%">Creates spycfg.exe - simple ATL Dialog App.</td>
+  </tr>
+  <tr>
+    <td width="20%"><b>spygui</b></td>
+    <td width="80%">MFC App that implements the GUI.&nbsp; This code is <i>disgusting</i>,
+      as I was just cut-n-pasted to get stuff up as quickly as possible.&nbsp;
+      Those of you who want to add GUI features will want to spend time in this
+      project.</td>
+  </tr>
+</table>
+<h3>To build COMSpy</h3>
+<p>I don't have a build script so just build the above projects.&nbsp; After you
+have built them you will need to nmake ctlspysrv\ctlspysrvps.mk and debugger\debuggerps.dll
+(obviously these are proxy/stub DLLs).&nbsp; Once you have built and registered
+these things you should be able to use COMSpy as usual.</p>
+<p>&nbsp;</p>
+<h3>Comments / wish list</h3>
+<p>I don't expect to work on COMSpy in the near future, but I will try to
+coordinate an open source effort based out of this web site.&nbsp; Naturally
+send requests, etc. to <a href="mailto:jasonw@develop.com">jasonw@develop.com</a>.&nbsp;
+We are going to need a groovier name than COMSpy - so if you think of one...</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

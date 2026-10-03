@@ -1,0 +1,115 @@
+// debugger.idl : IDL source for debugger.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (debugger.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+struct PROCESS_INFO
+{
+long dwCookie;
+BSTR bstrProcessName;
+};
+
+	[
+		object,
+		uuid(3F209DC0-3314-11D3-8BF2-00105A6DC077),
+	
+		helpstring("IDebugger Interface"),
+		pointer_default(unique)
+	]
+
+	//We do things in a ... peculiar fashion here.  The debugger process is not going to hold 
+	//onto any interfaces pointers, because it really doesn't need to talk to the debugged process
+	//hardly ever.  So we will pass it a table-marshaled data packet.  The debugger can hold
+	//the packet, then unmarshal it whenever it needs to talk to the debugged process.
+	interface IDebugger : IUnknown
+	{
+	HRESULT AdviseProcess([in]BSTR bstrProcessName,[in]long ProcessId,[in]REFIID iidPkt, [in]IStream * pMarshaledPacket);
+
+	//We'll count on the debugger manager to detect the fact that we died, so we will never call it
+	//back up and say anything.  Instead it will just poll every now and then.
+	//HRESULT UnadviseProcess([in]long ProcessId);
+	};
+	[
+		object,
+		uuid(3F209DC1-3314-11D3-8BF2-00105A6DC077),
+	
+		helpstring("Debugger Event Interface"),
+		pointer_default(unique)
+	]
+	interface IDebuggerEvents : IUnknown
+	{
+	//We primarily tell the debugger when new processes come and go.  OnProcessClosed
+	//is a handy warning for clients that want to detect when the debugee dies, but	isn't
+	//going to be sufficient to keep a remote debugger from seizing up after making a call
+	//to a debugee that then dies.
+	HRESULT OnProcessAdded([in]struct PROCESS_INFO * pinfo);
+	HRESULT OnProcessClosed([in]struct PROCESS_INFO * pinfo);
+	};
+
+
+	[
+		object,
+		uuid(3F209DC2-3314-11D3-8BF2-00105A6DC077),
+	
+		helpstring("Debugger client Interface"),
+		pointer_default(unique)
+	]
+	interface IClientAccessor : IUnknown
+	{
+	//Get a list of the current processes.
+	HRESULT GetProcessList([out]long * pCount, [out, size_is(,*pCount) ]struct PROCESS_INFO **ppInfo);
+
+	//Only one debugger is allowed to attach to a process. This keeps things like breakpoints
+	//sane.  We won't make the debugger tell us when it lets go; the client process itself can
+	//track that.  If a second debugger tries to access the same process it can refuse the connection. 
+	HRESULT AttachToProcess(long ProcessId, [in]REFIID riid, [out, iid_is(riid)]IUnknown ** ppProcess);
+
+	//clients can set up to receive some notifications from the manager, namely when a process
+	//comes or goes. 	
+	HRESULT Advise([in]REFIID riid, [in, iid_is(riid)]IUnknown * pSink, [out]long * pCookie);
+	HRESULT Unadvise([in]long Cookie);
+	};
+[
+	uuid(C72A9B90-3311-11D3-8BF2-00105A6DC077),
+	version(1.0),
+	helpstring("debugger 1.0 Type Library")
+]
+library DEBUGGERLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//There are two objects at play here.  One is created by the com spy and is used to 
+	//send notifications here. It should never be created remotely, as it passes things
+	//like process handles around.
+	
+	//The second coclass is for the use of client debugger processes.  They
+	//can use it to enumerate the current set of debugged objects.  The debuggers
+	//can attach to the debugged processes.  Since we are in a much better position
+	//to detect when clients die violently we will offer to send notifications of 
+	//changes in client processes.
+
+	//This process should be configured to run as Interactive user because it shows a GUI. I suppose
+	//I could partition it into a service and GUI process, but that sounds like a v2.0 feature.
+	[
+	uuid(58C849A0-3314-11D3-8BF2-00105A6DC077),
+	helpstring("Debugger Class")
+	]
+	coclass Debugger
+	{
+		[default] interface IDebugger;
+	};
+
+	[
+	uuid(664E10F0-3F2B-11D3-8BFA-00105A6DC077),
+	helpstring("ClientAccessor Class")
+	]
+	coclass ClientAccessor
+	{
+		[default] interface IClientAccessor;
+	};
+};

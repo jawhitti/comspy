@@ -1,0 +1,24 @@
+HKCR
+{
+	Debugger.ClientAccessor.1 = s 'ClientAccessor Class'
+	{
+		CLSID = s '{664E10F0-3F2B-11D3-8BFA-00105A6DC077}'
+	}
+	Debugger.ClientAccessor = s 'ClientAccessor Class'
+	{
+		CLSID = s '{664E10F0-3F2B-11D3-8BFA-00105A6DC077}'
+		CurVer = s 'Debugger.ClientAccessor.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {664E10F0-3F2B-11D3-8BFA-00105A6DC077} = s 'ClientAccessor Class'
+		{
+			ProgID = s 'Debugger.ClientAccessor.1'
+			VersionIndependentProgID = s 'Debugger.ClientAccessor'
+			ForceRemove 'Programmable'
+			LocalServer32 = s '%MODULE%'
+			val AppID = s '{C72A9B91-3311-11D3-8BF2-00105A6DC077}'
+			'TypeLib' = s '{C72A9B90-3311-11D3-8BF2-00105A6DC077}'
+		}
+	}
+}

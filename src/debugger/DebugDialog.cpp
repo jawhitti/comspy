@@ -1,0 +1,6 @@
+// DebugDialog.cpp : Implementation of CDebugDialog
+#include "stdafx.h"
+#include "DebugDialog.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// CDebugDialog

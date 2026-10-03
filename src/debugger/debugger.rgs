@@ -1,0 +1,34 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		{C72A9B91-3311-11D3-8BF2-00105A6DC077} = s 'debugger'
+		'debugger.EXE'
+		{
+			val AppID = s {C72A9B91-3311-11D3-8BF2-00105A6DC077}
+		}
+	}
+}
+HKCR
+{
+	Debugger.Debugger.1 = s 'Debugger Class'
+	{
+		CLSID = s '{58C849A0-3314-11D3-8BF2-00105A6DC077}'
+	}
+	Debugger.Debugger = s 'Debugger Class'
+	{
+		CLSID = s '{58C849A0-3314-11D3-8BF2-00105A6DC077}'
+		CurVer = s 'Debugger.Debugger.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {58C849A0-3314-11D3-8BF2-00105A6DC077} = s 'Debugger Class'
+		{
+			ProgID = s 'Debugger.Debugger.1'
+			VersionIndependentProgID = s 'Debugger.Debugger'
+			LocalServer32 = s '%MODULE%'
+			val AppID = s '{C72A9B91-3311-11D3-8BF2-00105A6DC077}'
+			'TypeLib' = s '{C72A9B90-3311-11D3-8BF2-00105A6DC077}'
+		}
+	}
+}

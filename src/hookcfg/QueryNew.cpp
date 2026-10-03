@@ -1,0 +1,6 @@
+// QueryNew.cpp : Implementation of CQueryNew
+#include "stdafx.h"
+#include "QueryNew.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// CQueryNew
