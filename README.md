@@ -21,6 +21,10 @@ Per the original source notes, this code is close to, but not exactly, what buil
 
 The original 1999 binaries still work on 64-bit Windows 10. [`scripts/`](scripts/README.md) has PowerShell scripts to install them, hook a class safely, and clean up, plus a test object (`test/`) to spy on.
 
+![COM Spy on Windows 10 in 2026, spying on ComSpy.TestObject in mshta.exe](media/screenshot1.png)
+
+*October 2026: the unmodified 1999 build watching `ComSpy.TestObject`, a script component, in 32-bit `mshta.exe`: interfaces held on the left, every QueryInterface, AddRef/Release and IDispatchEx call with its HRESULT on the right.*
+
 ### Building (from the original source notes)
 
 Build each project, then `nmake ctlspysrv\ctlspysrvps.mk` and `debugger\debuggerps.mk` to build the proxy/stub DLLs, then register everything (`install.bat`).
