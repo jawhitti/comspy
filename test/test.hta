@@ -1,0 +1,39 @@
+<html>
+<!-- Must run under the 32-bit HTA host so the 32-bit spy can load:
+       C:\Windows\SysWOW64\mshta.exe F:\full\path\to\test.hta
+     (a relative path makes mshta exit silently)
+     mshta has a message loop, which COM Spy 0.1 requires of its hosts. -->
+<head>
+  <title>COM Spy test host</title>
+  <hta:application id="app" applicationname="ComSpyTestHost" singleinstance="yes"/>
+  <style>
+    body { font-family: Segoe UI, sans-serif; font-size: 10pt; margin: 12px; }
+    button { margin-right: 6px; }
+    pre { background: #f4f4f4; padding: 8px; height: 260px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <p>Process: <b id="bits"></b></p>
+  <button onclick="create()">Create</button>
+  <button onclick="ping()">Ping</button>
+  <button onclick="fail()">Fail</button>
+  <button onclick="release()">Release</button>
+  <pre id="log"></pre>
+
+<script language="JScript">
+  var obj = null;
+  function log(s) { document.getElementById("log").innerText += s + "\n"; }
+  function attempt(what, f) {
+    try { f(); } catch (e) { log(what + " error 0x" + (e.number >>> 0).toString(16) + ": " + e.message); }
+  }
+  function create()  { attempt("create",  function () { obj = new ActiveXObject("ComSpy.TestObject"); log("created ComSpy.TestObject"); }); }
+  function ping()    { attempt("ping",    function () { log(obj.Ping("hello") + "  (Count = " + obj.Count + ")"); }); }
+  function fail()    { attempt("fail",    function () { obj.Fail(); }); }
+  function release() { obj = null; CollectGarbage(); log("released"); }
+
+  var sh = new ActiveXObject("WScript.Shell");
+  document.getElementById("bits").innerText =
+    sh.Environment("Process")("PROCESSOR_ARCHITECTURE") == "x86" ? "32-bit (good)" : "64-bit: run with SysWOW64\\mshta.exe";
+</script>
+</body>
+</html>

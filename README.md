@@ -17,6 +17,10 @@ This repo holds the source, recovered via the Wayback Machine from `comspy_src.z
 
 Per the original source notes, this code is close to, but not exactly, what built the released binaries. Some of the MTA-spying work had already been started in it.
 
+### Running it today
+
+The original 1999 binaries still work on 64-bit Windows 10. [`scripts/`](scripts/README.md) has PowerShell scripts to install them, hook a class safely, and clean up, plus a test object (`test/`) to spy on.
+
 ### Building (from the original source notes)
 
 Build each project, then `nmake ctlspysrv\ctlspysrvps.mk` and `debugger\debuggerps.mk` to build the proxy/stub DLLs, then register everything (`install.bat`).

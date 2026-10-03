@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!-- A throwaway in-proc COM object for trying out COM Spy. Registered and removed by
+     scripts\test-target.ps1; scrobj.dll serves it as an apartment-threaded class. -->
+<component>
+  <registration progid="ComSpy.TestObject"
+                classid="{9A619258-B104-4765-A375-1A6AF4B0EB68}"
+                description="COM Spy test object"
+                version="1.00"/>
+  <public>
+    <property name="Count"><get/></property>
+    <method name="Ping"><parameter name="msg"/></method>
+    <method name="Fail"/>
+  </public>
+  <script language="JScript"><![CDATA[
+    var Count = 0;
+    function get_Count() { return Count; }
+    function Ping(msg) { Count++; return "pong: " + msg; }
+    function Fail() { throw new Error("deliberate failure, to see an error HRESULT in the spy"); }
+  ]]></script>
+</component>
